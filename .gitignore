@@ -357,4 +357,3 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.gitignore.io/api/vim,osx,emacs,linux,macos,django,python,windows,pycharm,virtualenv,sublimetext,visualstudiocode
-config.py
