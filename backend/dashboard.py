@@ -2,6 +2,8 @@ from django.utils.translation import gettext_lazy as _
 
 from grappelli.dashboard import modules, Dashboard
 
+from discord.constants import SETTINGS_SINGLETON_ID
+
 
 class CustomIndexDashboard(Dashboard):
     def init_with_context(self, context):
@@ -17,8 +19,13 @@ class CustomIndexDashboard(Dashboard):
                         "external": False,
                     },
                     {
-                        "title": _("View pending tasks"),
+                        "title": _("View tasks"),
                         "url": "/discord/task/",
+                        "external": False,
+                    },
+                    {
+                        "title": _("Settings"),
+                        "url": f"/discord/settings/{SETTINGS_SINGLETON_ID}/change/",
                         "external": False,
                     },
                 ],

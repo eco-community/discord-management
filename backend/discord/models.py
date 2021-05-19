@@ -1,4 +1,24 @@
 from django.db import models
+from django.core.validators import MaxValueValidator, MinValueValidator
+
+
+class Settings(models.Model):
+    """Settings singleton table"""
+
+    delete_message_days_when_banned = models.IntegerField(
+        default=1, validators=[MinValueValidator(0), MaxValueValidator(7)]
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    modified_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "settings"
+        verbose_name_plural = "settings"
+
+    def __str__(self):
+        return str(self.pk)
 
 
 class DiscordRole(models.Model):
@@ -20,12 +40,12 @@ class DiscordMember(models.Model):
     """Discord member table"""
 
     class EngagementScoreChoices(models.IntegerChoices):
-        ZERO = 0, '0'
-        ONE = 1, '1'
-        TWO = 2, '2'
-        THREE = 3, '3'
-        FOUR = 4, '4'
-        FIVE = 5, '5'
+        ZERO = 0, "0"
+        ONE = 1, "1"
+        TWO = 2, "2"
+        THREE = 3, "3"
+        FOUR = 4, "4"
+        FIVE = 5, "5"
 
     id = models.BigIntegerField(primary_key=True)
     bot = models.BooleanField(default=False)

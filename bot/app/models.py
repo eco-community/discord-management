@@ -4,6 +4,23 @@ from tortoise.models import Model
 from app.constants import EngagementScoreChoices, TaskTypesChoices, TaskStatusChoices
 
 
+class Settings(Model):
+    """Settings singleton table"""
+
+    id = fields.BigIntField(pk=True)
+    delete_message_days_when_banned = fields.IntField(default=1)
+
+    created_at = fields.DatetimeField(auto_now_add=True)
+    modified_at = fields.DatetimeField(auto_now=True)
+
+    class Meta:
+        table = "discord_settings"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return str(self.id)
+
+
 class DiscordRole(Model):
     """Role table"""
 

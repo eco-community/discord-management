@@ -9,8 +9,8 @@ from discord.ext import commands, tasks
 
 import config
 from constants import GUILD_INDEX
-from app.models import Task
-from app.constants import TaskStatusChoices, TaskTypesChoices, DELETE_MESSAGE_DAYS_WHEN_BANNED
+from app.models import Task, Settings
+from app.constants import TaskStatusChoices, TaskTypesChoices, SETTINGS_SINGLETON_ID
 
 
 class TasksCog(commands.Cog):
@@ -45,6 +45,7 @@ class TasksCog(commands.Cog):
 
     async def execute_tasks(self) -> None:
         tasks = await Task.filter(status=TaskStatusChoices.IN_QUEUE)
+        settings, _ = await Settings.get_or_create(id=SETTINGS_SINGLETON_ID)
         await Task.filter(id__in=[_.id for _ in tasks]).update(status=TaskStatusChoices.STARTED)
         for task in tasks:
             try:
@@ -64,7 +65,7 @@ class TasksCog(commands.Cog):
                         await self.guild.ban(
                             user=member,
                             reason="Discord_Management",
-                            delete_message_days=DELETE_MESSAGE_DAYS_WHEN_BANNED,
+                            delete_message_days=settings.delete_message_days_when_banned,
                         )
                     task.status = TaskStatusChoices.FINISHED
                     await task.save(update_fields=["status", "modified_at"])

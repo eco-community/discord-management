@@ -30,17 +30,14 @@ environ.Env.read_env(env_file=str(BASE_DIR.parent.joinpath(".env")))
 sentry_sdk.init(
     dsn=env("SENTRY_API_KEY", default=""),
     integrations=[DjangoIntegration()],
-
     environment="eco_discord_management",
-
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
     # We recommend adjusting this value in production,
     traces_sample_rate=1.0,
-
     # If you wish to associate users to errors (assuming you are using
     # django.contrib.auth) you may enable sending PII data.
-    send_default_pii=True
+    send_default_pii=True,
 )
 
 # Quick-start development settings - unsuitable for production
@@ -59,7 +56,7 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS")
 
 INSTALLED_APPS = [
     "django.contrib.contenttypes",
-    'grappelli.dashboard',
+    "grappelli.dashboard",
     "grappelli",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -150,7 +147,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
 STATIC_URL = "/static/"
-STATIC_ROOT = env.str("STATIC_ROOT")
+STATIC_ROOT = env.str("STATIC_ROOT", default=None)
 STATICFILES_DIRS = [
     BASE_DIR.joinpath("static"),
 ]
@@ -162,9 +159,16 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Media
 MEDIA_URL = "/media/"
-MEDIA_ROOT = env.str("MEDIA_ROOT")
+MEDIA_ROOT = env.str("MEDIA_ROOT", default="")
 
 
 # Grapelli Admin Theme
 GRAPPELLI_ADMIN_TITLE = "ECO Discord Management"
 GRAPPELLI_INDEX_DASHBOARD = "dashboard.CustomIndexDashboard"
+
+
+# django-debug toolbar
+if DEBUG:
+    INSTALLED_APPS.append("debug_toolbar")
+    MIDDLEWARE.append("debug_toolbar.middleware.DebugToolbarMiddleware")
+    INTERNAL_IPS = ["localhost", "127.0.0.1"]

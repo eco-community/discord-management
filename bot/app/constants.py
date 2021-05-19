@@ -24,4 +24,4 @@ class TaskStatusChoices(str, Enum):
     FAILED = "FAILED"  # Task failed
 
 
-DELETE_MESSAGE_DAYS_WHEN_BANNED = 7
+SETTINGS_SINGLETON_ID = 1

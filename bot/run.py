@@ -4,7 +4,6 @@ import logging
 from discord import Intents, Activity, ActivityType
 from tortoise import Tortoise
 from discord.ext import commands
-from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 
 import config
 from constants import SENTRY_ENV_NAME, TORTOISE_ORM
@@ -23,7 +22,7 @@ if __name__ == "__main__":
         bot,
         dsn=config.SENTRY_API_KEY,
         environment=SENTRY_ENV_NAME,
-        integrations=[AioHttpIntegration()],
+        integrations=[],
     )
 
     # setup logger
