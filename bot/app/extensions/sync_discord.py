@@ -59,9 +59,12 @@ class SyncDiscord(commands.Cog):
         # calculate messages count
         self.members_messages_count.clear()
         for channel in self.guild.channels:
-            if hasattr(channel, "history"):
-                async for message in channel.history(limit=None):
-                    self.members_messages_count[message.author.id] += 1
+            try:
+                if hasattr(channel, "history") and channel.type is discord.ChannelType.text:
+                    async for message in channel.history(limit=None):
+                        self.members_messages_count[message.author.id] += 1
+            except discord.Forbidden:
+                pass  # silently ignore private channels
         return None
 
     async def sync_data_to_db(self) -> None:

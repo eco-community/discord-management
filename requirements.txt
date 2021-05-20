@@ -8,3 +8,4 @@ django-grappelli==2.15.1
 psycopg2-binary==2.8.6
 django-environ==0.4.5
 django-debug-toolbar==3.2.1
+python-dateutil==2.8.1
