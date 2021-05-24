@@ -19,55 +19,85 @@ from app.models import DiscordMember, DiscordRole, DiscordRoleMember
 class SyncDiscord(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot: commands.Bot = bot
-        self.lock = asyncio.Lock()
-        self.guild: discord.Guild
+        self.sync_users_and_roles_lock = asyncio.Lock()
+        self.sync_message_data_lock = asyncio.Lock()
+        self.guild: discord.Guild = None
         self.members: List[discord.Member]
         self.members_messages_count: Dict[int, int] = defaultdict(lambda: 0, {})  # id, messages_count
         self.roles: List[discord.Role]
-        self.sync_discord_to_db.start()
+        self.sync_users_and_roles_to_db.start()
+        self.sync_message_data_to_db.start()
 
     def cog_unload(self):
-        self.sync_discord_to_db.cancel()
+        self.sync_users_and_roles_to_db.cancel()
+        self.sync_message_data_to_db.cancel()
 
     @tasks.loop(seconds=config.SYNC_DISCORD_SECONDS)
-    async def sync_discord_to_db(self):
+    async def sync_users_and_roles_to_db(self):
         with Hub(Hub.current):
             # ensure that only one instance of job is running, other instances will be discarded
-            if not self.lock.locked():
-                await self.lock.acquire()
+            if not self.sync_users_and_roles_lock.locked():
+                await self.sync_users_and_roles_lock.acquire()
                 try:
-                    await self.fetch_data()
-                    await self.sync_data_to_db()
+                    await self.fetch_users_and_roles()
+                    await self.save_users_and_roles_to_db()
                 except Exception as e:
                     logging.debug(f":::discord_management: {e}")
                     capture_exception(e)
                 finally:
-                    self.lock.release()
+                    self.sync_users_and_roles_lock.release()
 
-    @sync_discord_to_db.before_loop
-    async def before_sync_discord_to_db(self):
+    @sync_users_and_roles_to_db.before_loop
+    async def before_sync_users_and_roles_to_db(self):
         await self.bot.wait_until_ready()
-        self.guild = self.bot.guilds[GUILD_INDEX]
+        if self.guild is None:
+            self.guild = self.bot.guilds[GUILD_INDEX]
 
-    async def fetch_data(self) -> None:
+    @tasks.loop(seconds=config.SYNC_DISCORD_SECONDS)
+    async def sync_message_data_to_db(self):
+        """Note: because it takes a lot of time we will use a separate task for fetching & analyzing messages"""
+        with Hub(Hub.current):
+            # ensure that only one instance of job is running, other instances will be discarded
+            if not self.sync_message_data_lock.locked():
+                await self.sync_message_data_lock.acquire()
+                try:
+                    await self.fetch_message_data()
+                except Exception as e:
+                    logging.debug(f":::discord_management: {e}")
+                    capture_exception(e)
+                finally:
+                    self.sync_message_data_lock.release()
+
+    @sync_message_data_to_db.before_loop
+    async def before_sync_message_data_to_db(self):
+        await self.bot.wait_until_ready()
+        if self.guild is None:
+            self.guild = self.bot.guilds[GUILD_INDEX]
+
+    async def fetch_message_data(self) -> None:
+        # calculate messages count
+        _members_messages_count: Dict[int, int] = defaultdict(lambda: 0, {})
+        for channel in self.guild.channels:
+            try:
+                if hasattr(channel, "history") and channel.type is discord.ChannelType.text:
+                    async for message in channel.history(limit=None):
+                        _members_messages_count[message.author.id] += 1
+            except discord.Forbidden:
+                pass  # silently ignore private channels
+        # switch between cached and fresh message data
+        self.members_messages_count = _members_messages_count
+        return None
+
+    async def fetch_users_and_roles(self) -> None:
         # fetch all roles
         self.roles = await self.guild.fetch_roles()
         # fetch all members
         self.members = []
         async for member in self.guild.fetch_members(limit=None):
             self.members.append(member)
-        # calculate messages count
-        self.members_messages_count.clear()
-        for channel in self.guild.channels:
-            try:
-                if hasattr(channel, "history") and channel.type is discord.ChannelType.text:
-                    async for message in channel.history(limit=None):
-                        self.members_messages_count[message.author.id] += 1
-            except discord.Forbidden:
-                pass  # silently ignore private channels
         return None
 
-    async def sync_data_to_db(self) -> None:
+    async def save_users_and_roles_to_db(self) -> None:
         async with in_transaction():
             # sync roles
             await DiscordRole.all().delete()

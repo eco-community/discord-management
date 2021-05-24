@@ -48,9 +48,18 @@ class DiscordMemberAdmin(admin.ModelAdmin):
     ]
     filter_horizontal = ["roles"]
     readonly_fields = ["avatar"]
-    list_display = ["username", "role", "engagement_score", "joined_at", "created_at", "age_of_account"]
-    sortable_by = ["username", "bot", "engagement_score", "joined_at", "created_at"]
-    list_filter = ["roles", "bot", "engagement_score", "joined_at", "pending"]
+    list_display = [
+        "username",
+        "role",
+        "engagement_score",
+        "messages_count",
+        "joined_at",
+        "created_at",
+        "age_of_account",
+    ]
+    ordering = ["joined_at"]
+    sortable_by = ["username", "bot", "engagement_score", "messages_count", "joined_at", "created_at"]
+    list_filter = ["roles", "engagement_score", "joined_at", "created_at", "pending", "bot"]
     search_fields = ["name", "discriminator", "nick", "username"]
 
     def role(self, obj):
