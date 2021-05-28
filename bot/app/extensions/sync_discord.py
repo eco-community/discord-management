@@ -14,6 +14,7 @@ import config
 from constants import GUILD_INDEX
 from app.utils import calculate_engagement_score, humanize_readable_datetime
 from app.models import DiscordMember, DiscordRole, DiscordRoleMember
+from app.constants import EVERYONE_ROLE
 
 
 class SyncDiscord(commands.Cog):
@@ -109,7 +110,7 @@ class SyncDiscord(commands.Cog):
                         position=_.position,
                         created_at=_.created_at,
                     )
-                    for _ in self.roles
+                    for _ in self.roles if _.name != EVERYONE_ROLE
                 ]
             )
             # sync members
@@ -130,7 +131,6 @@ class SyncDiscord(commands.Cog):
                         nick=_.nick,
                         pending=_.pending,
                         premium_since=_.premium_since,
-                        raw_status=_.raw_status,
                         joined_at=_.joined_at,
                         created_at=_.created_at,
                     )
@@ -141,12 +141,13 @@ class SyncDiscord(commands.Cog):
             bulk_create_list = []
             for member in self.members:
                 for role in member.roles:
-                    bulk_create_list.append(
-                        DiscordRoleMember(
-                            discordmember_id=member.id,
-                            discordrole_id=role.id,
+                    if role.name != EVERYONE_ROLE:
+                        bulk_create_list.append(
+                            DiscordRoleMember(
+                                discordmember_id=member.id,
+                                discordrole_id=role.id,
+                            )
                         )
-                    )
             await DiscordRoleMember.bulk_create(bulk_create_list)
         return None
 

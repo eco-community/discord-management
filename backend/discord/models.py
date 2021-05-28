@@ -60,7 +60,6 @@ class DiscordMember(models.Model):
     roles = models.ManyToManyField(DiscordRole, related_name="members", blank=True)
     pending = models.BooleanField(default=False)
     premium_since = models.DateTimeField(blank=True, null=True)
-    raw_status = models.CharField(max_length=255)
     joined_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField()
 

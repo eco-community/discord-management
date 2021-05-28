@@ -55,7 +55,6 @@ class DiscordMember(Model):
     roles = fields.ManyToManyField("app.DiscordRole", related_name="members", through="discord_discordmember_roles")
     pending = fields.BooleanField(default=False)
     premium_since = fields.DatetimeField(null=True)
-    raw_status = fields.CharField(max_length=255)
     joined_at = fields.DatetimeField(null=True)
     created_at = fields.DatetimeField()
 

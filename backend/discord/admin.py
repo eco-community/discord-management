@@ -35,7 +35,6 @@ class DiscordMemberAdmin(admin.ModelAdmin):
         "avatar",
         "username",
         "roles",
-        "raw_status",
         "nick",
         "bot",
         "pending",
@@ -63,7 +62,7 @@ class DiscordMemberAdmin(admin.ModelAdmin):
     search_fields = ["name", "discriminator", "nick", "username"]
 
     def role(self, obj):
-        return ", ".join([_.name for _ in obj.roles.all() if _.name != "@everyone"])
+        return ", ".join([_.name for _ in obj.roles.all()])
 
     @admin.display()
     def avatar(self, obj):

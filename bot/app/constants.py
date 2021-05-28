@@ -25,3 +25,4 @@ class TaskStatusChoices(str, Enum):
 
 
 SETTINGS_SINGLETON_ID = 1
+EVERYONE_ROLE = "@everyone"
