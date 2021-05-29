@@ -3,6 +3,8 @@ from django.contrib import messages
 from django.utils.html import format_html
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
+from django.utils.safestring import mark_safe
+from django.template.defaultfilters import pluralize
 
 from discord.forms import DiscordRoleForm
 from discord.models import DiscordMember, Task, Settings
@@ -82,14 +84,28 @@ class DiscordMemberAdmin(admin.ModelAdmin):
     @admin.action(description="Kick members from Discord")
     def kick_action(self, request, queryset):
         members_ids = list(queryset.values_list("id", flat=True))
-        Task.objects.create(members_ids=members_ids, task_type=Task.TaskTypesChoices.KICK)
-        self.message_user(request, "Selected users will be kicked from Discord server", level=messages.SUCCESS)
+        task = Task.objects.create(members_ids=members_ids, task_type=Task.TaskTypesChoices.KICK)
+        members_count = queryset.count()
+        self.message_user(
+            request,
+            mark_safe(
+                f"{members_count} member{pluralize(members_count)} will be kickeded shortly, <a href='/discord/task/{task.id}/change/'>track progress here</a>"  # noqa: E501
+            ),
+            level=messages.SUCCESS,
+        )
 
     @admin.action(description="Ban members from Discord")
     def ban_action(self, request, queryset):
         members_ids = list(queryset.values_list("id", flat=True))
-        Task.objects.create(members_ids=members_ids, task_type=Task.TaskTypesChoices.BAN)
-        self.message_user(request, "Selected users will be banned from Discord server", level=messages.SUCCESS)
+        task = Task.objects.create(members_ids=members_ids, task_type=Task.TaskTypesChoices.BAN)
+        members_count = queryset.count()
+        self.message_user(
+            request,
+            mark_safe(
+                f"{members_count} member{pluralize(members_count)} will be banned shortly, <a href='/discord/task/{task.id}/change/'>track progress here</a>"  # noqa: E501
+            ),
+            level=messages.SUCCESS,
+        )
 
     @admin.action(description="Assign role to members")
     def assign_role_action(self, request, queryset):
@@ -97,14 +113,17 @@ class DiscordMemberAdmin(admin.ModelAdmin):
             form = DiscordRoleForm(request.POST)
             if form.is_valid():
                 role = form.cleaned_data["role"]
-                Task.objects.create(
+                task = Task.objects.create(
                     task_type=Task.TaskTypesChoices.ASSIGN_ROLE,
                     members_ids=list(queryset.values_list("id", flat=True)),
                     roles_ids=[role.id],
                 )
+                members_count = queryset.count()
                 self.message_user(
                     request,
-                    f"{role.name} role will be assigned to {queryset.count()} members",
+                    mark_safe(
+                        f"{role.name} role will be assigned shortly to {members_count} member{pluralize(members_count)}, <a href='/discord/task/{task.id}/change/'>track progress here</a>"  # noqa: E501
+                    ),
                     level=messages.SUCCESS,
                 )
                 return HttpResponseRedirect(request.get_full_path())
@@ -122,14 +141,17 @@ class DiscordMemberAdmin(admin.ModelAdmin):
             form = DiscordRoleForm(request.POST)
             if form.is_valid():
                 role = form.cleaned_data["role"]
-                Task.objects.create(
+                task = Task.objects.create(
                     task_type=Task.TaskTypesChoices.REMOVE_ROLE,
                     members_ids=list(queryset.values_list("id", flat=True)),
                     roles_ids=[role.id],
                 )
+                members_count = queryset.count()
                 self.message_user(
                     request,
-                    f"{role.name} role will be removed from {queryset.count()} members",
+                    mark_safe(
+                        f"{role.name} role will be removed shortly from {members_count} member{pluralize(members_count)}, <a href='/discord/task/{task.id}/change/'>track progress here</a>"  # noqa: E501
+                    ),
                     level=messages.SUCCESS,
                 )
                 return HttpResponseRedirect(request.get_full_path())
