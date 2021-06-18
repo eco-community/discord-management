@@ -100,8 +100,11 @@ class SyncDiscord(commands.Cog):
 
     async def save_users_and_roles_to_db(self) -> None:
         async with in_transaction():
-            # sync roles
+            # clean up db
+            await DiscordRoleMember.all().delete()
             await DiscordRole.all().delete()
+            await DiscordMember.all().delete()
+            # sync roles
             await DiscordRole.bulk_create(
                 [
                     DiscordRole(
@@ -114,8 +117,6 @@ class SyncDiscord(commands.Cog):
                 ]
             )
             # sync members
-            await DiscordRoleMember.all().delete()
-            await DiscordMember.all().delete()
             await DiscordMember.bulk_create(
                 [
                     DiscordMember(
