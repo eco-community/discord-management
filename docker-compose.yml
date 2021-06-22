@@ -1,8 +1,9 @@
 ---
-version: "3.8"
+version: '3.8'
 
 volumes:
   postgres_data: {}
+  redisearch_data: {}
 
 services:
   postgres:
@@ -11,13 +12,29 @@ services:
       - postgres_data:/var/lib/postgresql/data
     env_file: .env
     ports:
-     - "127.0.0.1:5432:5432"
-
+      - '127.0.0.1:5432:5432'
     healthcheck:
-      test: "pg_isready -h localhost -p 5432 -q -d $POSTGRES_DB -U $POSTGRES_USER"
+      test: 'pg_isready -h localhost -p 5432 -q -d $POSTGRES_DB -U $POSTGRES_USER'
       interval: 3s
       timeout: 5s
       retries: 5
+
+  redisearch:
+    image: redislabs/redisearch:latest
+    volumes:
+      - redisearch_data:/data
+    ports:
+      - '127.0.0.1:6379:6379/tcp'
+    healthcheck:
+      test: redis-cli ping
+      interval: 3s
+      timeout: 5s
+      retries: 5
+
+  # redisinsight:
+  #   image: redislabs/redisinsight:latest
+  #   ports:
+  #     - "127.0.0.1:8001:8001"
 
   # adminer:
   #   image: adminer

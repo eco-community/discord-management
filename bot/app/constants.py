@@ -26,3 +26,8 @@ class TaskStatusChoices(str, Enum):
 
 SETTINGS_SINGLETON_ID = 1
 EVERYONE_ROLE = "@everyone"
+MUTED_ROLE = "Muted"
+CACHE_INDEX = "message"
+CACHE_PREFIX = "message:"
+CACHE_SEPARATOR = "-"
+ADMIN_ROLE = "Eco Team"

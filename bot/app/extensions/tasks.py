@@ -1,7 +1,6 @@
 import logging
 import asyncio
 
-
 import discord
 from sentry_sdk import capture_exception, Hub
 from tortoise.transactions import in_transaction

@@ -4,7 +4,6 @@ from collections import defaultdict
 from typing import List, Dict
 from datetime import datetime
 
-
 import discord
 from sentry_sdk import capture_exception, Hub
 from tortoise.transactions import in_transaction
@@ -24,14 +23,12 @@ class SyncDiscord(commands.Cog):
         self.sync_message_data_lock = asyncio.Lock()
         self.guild: discord.Guild = None
         self.members: List[discord.Member]
-        self.members_messages_count: Dict[int, int] = defaultdict(lambda: 0, {})  # id, messages_count
+        self.bot.members_messages_count = defaultdict(lambda: 0, {})  # id, messages_count
         self.roles: List[discord.Role]
         self.sync_users_and_roles_to_db.start()
-        self.sync_message_data_to_db.start()
 
     def cog_unload(self):
         self.sync_users_and_roles_to_db.cancel()
-        self.sync_message_data_to_db.cancel()
 
     @tasks.loop(seconds=config.SYNC_DISCORD_SECONDS)
     async def sync_users_and_roles_to_db(self):
@@ -53,27 +50,7 @@ class SyncDiscord(commands.Cog):
         await self.bot.wait_until_ready()
         if self.guild is None:
             self.guild = self.bot.guilds[GUILD_INDEX]
-
-    @tasks.loop(seconds=config.SYNC_DISCORD_SECONDS)
-    async def sync_message_data_to_db(self):
-        """Note: because it takes a lot of time we will use a separate task for fetching & analyzing messages"""
-        with Hub(Hub.current):
-            # ensure that only one instance of job is running, other instances will be discarded
-            if not self.sync_message_data_lock.locked():
-                await self.sync_message_data_lock.acquire()
-                try:
-                    await self.fetch_message_data()
-                except Exception as e:
-                    logging.debug(f":::discord_management: {e}")
-                    capture_exception(e)
-                finally:
-                    self.sync_message_data_lock.release()
-
-    @sync_message_data_to_db.before_loop
-    async def before_sync_message_data_to_db(self):
-        await self.bot.wait_until_ready()
-        if self.guild is None:
-            self.guild = self.bot.guilds[GUILD_INDEX]
+        await self.fetch_message_data()
 
     async def fetch_message_data(self) -> None:
         # calculate messages count
@@ -86,7 +63,7 @@ class SyncDiscord(commands.Cog):
             except discord.Forbidden:
                 pass  # silently ignore private channels
         # switch between cached and fresh message data
-        self.members_messages_count = _members_messages_count
+        self.bot.members_messages_count = _members_messages_count
         return None
 
     async def fetch_users_and_roles(self) -> None:
@@ -113,7 +90,8 @@ class SyncDiscord(commands.Cog):
                         position=_.position,
                         created_at=_.created_at,
                     )
-                    for _ in self.roles if _.name != EVERYONE_ROLE
+                    for _ in self.roles
+                    if _.name != EVERYONE_ROLE
                 ]
             )
             # sync members
@@ -126,8 +104,8 @@ class SyncDiscord(commands.Cog):
                         name=_.name,
                         username=f"{_.name}#{_.discriminator}",
                         discriminator=_.discriminator,
-                        engagement_score=calculate_engagement_score(self.members_messages_count[_.id]),
-                        messages_count=self.members_messages_count[_.id],
+                        engagement_score=calculate_engagement_score(self.bot.members_messages_count[_.id]),
+                        messages_count=self.bot.members_messages_count[_.id],
                         age_of_account=humanize_readable_datetime(datetime.now(), _.created_at),
                         nick=_.nick,
                         pending=_.pending,
