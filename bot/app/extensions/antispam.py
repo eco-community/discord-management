@@ -122,8 +122,6 @@ class AntiSpamCog(commands.Cog):
         if not message.guild:
             return None
         await self.process_message(message)
-        # handle counting new messages
-        self.bot.members_messages_count[message.author.id] += 1
         return None
 
     @commands.Cog.listener()
@@ -145,8 +143,6 @@ class AntiSpamCog(commands.Cog):
         # ignore messages from DM
         if not message.guild:
             return None
-        # handle counting deleted messages
-        self.bot.members_messages_count[message.author.id] -= 1
         # clear deleted messages from cache
         if message.created_at > datetime.utcnow() - timedelta(seconds=config.KEEP_MESSAGES_FOR_ANTISPAM_IN_SECONDS):
             await self.bot.redis_client.delete(SpamItem(message_id=message.id, channel_id=message.channel.id).cache_id)

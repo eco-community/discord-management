@@ -130,6 +130,24 @@ class SyncDiscord(commands.Cog):
             await DiscordRoleMember.bulk_create(bulk_create_list)
         return None
 
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message) -> None:
+        # ignore messages from DM
+        if not message.guild:
+            return None
+        # handle counting new messages
+        self.bot.members_messages_count[message.author.id] += 1
+        return None
+
+    @commands.Cog.listener()
+    async def on_message_delete(self, message: discord.Message) -> None:
+        # ignore messages from DM
+        if not message.guild:
+            return None
+        # handle counting deleted messages
+        self.bot.members_messages_count[message.author.id] -= 1
+        return None
+
 
 def setup(bot):
     bot.add_cog(SyncDiscord(bot))

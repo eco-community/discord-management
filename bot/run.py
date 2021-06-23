@@ -1,7 +1,7 @@
 import sys
 import logging
 
-import aioredis
+# import aioredis
 from discord import Intents, Activity, ActivityType
 from tortoise import Tortoise
 from discord.ext import commands
@@ -37,8 +37,8 @@ if __name__ == "__main__":
         handlers=[file_handler if config.LOG_TO_FILE else stdout_handler],
     )
     bot.loop.run_until_complete(Tortoise.init(config=TORTOISE_ORM))
-    bot.redis_client = aioredis.from_url(config.REDIS_HOST_URL)
+    # bot.redis_client = aioredis.from_url(config.REDIS_HOST_URL)
     bot.load_extension("app.extensions.sync_discord")
     bot.load_extension("app.extensions.tasks")
-    bot.load_extension("app.extensions.antispam")
+    # bot.load_extension("app.extensions.antispam")
     bot.run(config.TOKEN)
