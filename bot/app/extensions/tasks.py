@@ -3,7 +3,6 @@ import asyncio
 
 import discord
 from sentry_sdk import capture_exception, Hub
-from tortoise.transactions import in_transaction
 from discord.ext import commands, tasks
 
 import config
@@ -29,8 +28,7 @@ class TasksCog(commands.Cog):
             if not self.lock.locked():
                 await self.lock.acquire()
                 try:
-                    async with in_transaction():
-                        await self.execute_tasks()
+                    await self.execute_tasks()
                 except Exception as e:
                     logging.debug(f":::discord_management: {e}")
                     capture_exception(e)
@@ -45,9 +43,11 @@ class TasksCog(commands.Cog):
     async def execute_tasks(self) -> None:
         tasks = await Task.filter(status=TaskStatusChoices.IN_QUEUE)
         settings, _ = await Settings.get_or_create(id=SETTINGS_SINGLETON_ID)
-        await Task.filter(id__in=[_.id for _ in tasks]).update(status=TaskStatusChoices.STARTED)
         for task in tasks:
             try:
+                # set task status to "started"
+                task.status = TaskStatusChoices.STARTED
+                await task.save(update_fields=["status", "modified_at"])
                 for member_id in task.members_ids:
                     member = self.guild.get_member(member_id)
                     if not member:
@@ -66,8 +66,9 @@ class TasksCog(commands.Cog):
                             reason="Discord_Management",
                             delete_message_days=settings.delete_message_days_when_banned,
                         )
-                    task.status = TaskStatusChoices.FINISHED
-                    await task.save(update_fields=["status", "modified_at"])
+                # set task status to "finished"
+                task.status = TaskStatusChoices.FINISHED
+                await task.save(update_fields=["status", "modified_at"])
             except Exception as e:
                 task.error = str(e)
                 task.status = TaskStatusChoices.FAILED
