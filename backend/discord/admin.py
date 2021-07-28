@@ -109,6 +109,8 @@ class DiscordMemberAdmin(admin.ModelAdmin):
 
     @admin.action(description="Assign role to members")
     def assign_role_action(self, request, queryset):
+        do_select_across = "select_across" in request.POST and request.POST["select_across"] == "1"
+        members_count = queryset.count()
         if "do_assign_role_action" in request.POST:
             form = DiscordRoleForm(request.POST)
             if form.is_valid():
@@ -118,7 +120,6 @@ class DiscordMemberAdmin(admin.ModelAdmin):
                     members_ids=list(queryset.values_list("id", flat=True)),
                     roles_ids=[role.id],
                 )
-                members_count = queryset.count()
                 self.message_user(
                     request,
                     mark_safe(
@@ -132,11 +133,19 @@ class DiscordMemberAdmin(admin.ModelAdmin):
         return render(
             request,
             "admin/manage_role_intermediate.html",
-            context={"action_name": "assign", "objects": queryset, "form": form},
+            context={
+                "action_name": "assign",
+                "objects": queryset if not do_select_across else queryset[:100],
+                "form": form,
+                "select_across": "0" if not do_select_across else "1",
+                "members_count": members_count,
+            },
         )
 
     @admin.action(description="Remove role from members")
     def remove_role_action(self, request, queryset):
+        do_select_across = "select_across" in request.POST and request.POST["select_across"] == "1"
+        members_count = queryset.count()
         if "do_remove_role_action" in request.POST:
             form = DiscordRoleForm(request.POST)
             if form.is_valid():
@@ -146,7 +155,6 @@ class DiscordMemberAdmin(admin.ModelAdmin):
                     members_ids=list(queryset.values_list("id", flat=True)),
                     roles_ids=[role.id],
                 )
-                members_count = queryset.count()
                 self.message_user(
                     request,
                     mark_safe(
@@ -160,7 +168,13 @@ class DiscordMemberAdmin(admin.ModelAdmin):
         return render(
             request,
             "admin/manage_role_intermediate.html",
-            context={"action_name": "remove", "objects": queryset, "form": form},
+            context={
+                "action_name": "remove",
+                "objects": queryset if not do_select_across else queryset[:100],
+                "form": form,
+                "select_across": "0" if not do_select_across else "1",
+                "members_count": members_count,
+            },
         )
 
 
