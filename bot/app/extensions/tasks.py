@@ -49,23 +49,26 @@ class TasksCog(commands.Cog):
                 task.status = TaskStatusChoices.STARTED
                 await task.save(update_fields=["status", "modified_at"])
                 for member_id in task.members_ids:
-                    member = self.guild.get_member(member_id)
-                    if not member:
-                        member = await self.guild.fetch_member(member_id)
-                    if task.task_type == TaskTypesChoices.KICK:
-                        await self.guild.kick(user=member, reason="Discord_Management")
-                    elif task.task_type == TaskTypesChoices.ASSIGN_ROLE:
-                        roles = [self.guild.get_role(_) for _ in task.roles_ids]
-                        await member.add_roles(*roles, reason="Discord_Management")
-                    elif task.task_type == TaskTypesChoices.REMOVE_ROLE:
-                        roles = [self.guild.get_role(_) for _ in task.roles_ids]
-                        await member.remove_roles(*roles, reason="Discord_Management")
-                    elif task.task_type == TaskTypesChoices.BAN:
-                        await self.guild.ban(
-                            user=member,
-                            reason="Discord_Management",
-                            delete_message_days=settings.delete_message_days_when_banned,
-                        )
+                    try:
+                        member = self.guild.get_member(member_id)
+                        if not member:
+                            member = await self.guild.fetch_member(member_id)
+                        if task.task_type == TaskTypesChoices.KICK:
+                            await self.guild.kick(user=member, reason="Discord_Management")
+                        elif task.task_type == TaskTypesChoices.ASSIGN_ROLE:
+                            roles = [self.guild.get_role(_) for _ in task.roles_ids]
+                            await member.add_roles(*roles, reason="Discord_Management")
+                        elif task.task_type == TaskTypesChoices.REMOVE_ROLE:
+                            roles = [self.guild.get_role(_) for _ in task.roles_ids]
+                            await member.remove_roles(*roles, reason="Discord_Management")
+                        elif task.task_type == TaskTypesChoices.BAN:
+                            await self.guild.ban(
+                                user=member,
+                                reason="Discord_Management",
+                                delete_message_days=settings.delete_message_days_when_banned,
+                            )
+                    except discord.errors.NotFound:
+                        pass  # ignore errors related to not found members
                 # set task status to "finished"
                 task.status = TaskStatusChoices.FINISHED
                 await task.save(update_fields=["status", "modified_at"])
