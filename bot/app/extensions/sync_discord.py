@@ -22,7 +22,7 @@ class SyncDiscord(commands.Cog):
         self.sync_users_and_roles_lock = asyncio.Lock()
         self.sync_message_data_lock = asyncio.Lock()
         self.guild: discord.Guild = None
-        self.members: List[discord.Member]
+        self.bot.discord_members = []
         self.bot.members_messages_count = defaultdict(lambda: 0, {})  # id, messages_count
         self.roles: List[discord.Role]
         self.sync_users_and_roles_to_db.start()
@@ -70,9 +70,9 @@ class SyncDiscord(commands.Cog):
         # fetch all roles
         self.roles = await self.guild.fetch_roles()
         # fetch all members
-        self.members = []
+        self.bot.discord_members = []
         async for member in self.guild.fetch_members(limit=None):
-            self.members.append(member)
+            self.bot.discord_members.append(member)
         return None
 
     async def save_users_and_roles_to_db(self) -> None:
@@ -113,12 +113,12 @@ class SyncDiscord(commands.Cog):
                         joined_at=_.joined_at,
                         created_at=_.created_at,
                     )
-                    for _ in self.members
+                    for _ in self.bot.discord_members
                 ]
             )
             # sync member roles
             bulk_create_list = []
-            for member in self.members:
+            for member in self.bot.discord_members:
                 for role in member.roles:
                     if role.name != EVERYONE_ROLE:
                         bulk_create_list.append(

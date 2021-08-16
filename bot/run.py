@@ -40,5 +40,6 @@ if __name__ == "__main__":
     # bot.redis_client = aioredis.from_url(config.REDIS_HOST_URL)
     bot.load_extension("app.extensions.sync_discord")
     bot.load_extension("app.extensions.tasks")
+    bot.load_extension("app.extensions.antifraud")
     # bot.load_extension("app.extensions.antispam")
     bot.run(config.TOKEN)
