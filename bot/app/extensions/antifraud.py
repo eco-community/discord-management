@@ -53,7 +53,9 @@ class AntiFraudCog(commands.Cog):
         # ban impersonators
         member_ids_to_ban_list = list(member_ids_to_ban)
         # prevent duplicate ban tasks
-        if member_ids_to_ban_list and not await Task.exists(members_ids=member_ids_to_ban_list):
+        if member_ids_to_ban_list and not await Task.exists(
+            members_ids=member_ids_to_ban_list, task_type=TaskTypesChoices.BAN
+        ):
             await Task.create(members_ids=member_ids_to_ban_list, task_type=TaskTypesChoices.BAN)
         return None
 
