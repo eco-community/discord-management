@@ -47,7 +47,7 @@ class AntiFraudCog(commands.Cog):
         # search for impersonators
         for member in self.bot.discord_members:
             is_member_suspected = "accountant" in member.name.lower() or "accountant" in str(member.nick).lower()
-            is_member_real_accountant = int(member.id) == int(config.ACCOUNTANT_BOT_ID)
+            is_member_real_accountant = int(member.id) in config.ACCOUNTANT_BOT_IDS
             if is_member_suspected and not is_member_real_accountant:
                 member_ids_to_ban.add(member.id)
         # ban impersonators
