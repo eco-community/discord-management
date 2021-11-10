@@ -1,14 +1,19 @@
+import csv
+from io import StringIO
+
 from django.contrib import admin
 from django.contrib import messages
 from django.utils.html import format_html
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, StreamingHttpResponse
 from django.utils.safestring import mark_safe
 from django.template.defaultfilters import pluralize
 
 from discord.forms import DiscordRoleForm
 from discord.models import DiscordMember, Task, Settings
 from discord.constants import SETTINGS_SINGLETON_ID
+
+from .utils import keyset_pagination_iterator
 
 
 @admin.register(Settings)
@@ -79,7 +84,37 @@ class DiscordMemberAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
-    actions = ["kick_action", "ban_action", "assign_role_action", "remove_role_action"]
+    actions = ["kick_action", "ban_action", "assign_role_action", "remove_role_action", "export_as_csv"]
+
+    @admin.action(description="Export selected rows to CSV")
+    def export_as_csv(self, request, queryset):
+        def rows(queryset):
+
+            csvfile = StringIO()
+            csvwriter = csv.writer(csvfile)
+            columns = [field.name for field in self.model._meta.fields]
+
+            def read_and_flush():
+                csvfile.seek(0)
+                data = csvfile.read()
+                csvfile.seek(0)
+                csvfile.truncate()
+                return data
+
+            header = False
+
+            if not header:
+                header = True
+                csvwriter.writerow(columns)
+                yield read_and_flush()
+
+            for row in keyset_pagination_iterator(queryset):
+                csvwriter.writerow(getattr(row, column) for column in columns)
+                yield read_and_flush()
+
+        response = StreamingHttpResponse(rows(queryset), content_type="text/csv")
+        response["Content-Disposition"] = "attachment; filename=%s.csv" % self.model.__name__
+        return response
 
     @admin.action(description="Kick members from Discord")
     def kick_action(self, request, queryset):
