@@ -23,7 +23,7 @@ urlpatterns = [
     path("", admin.site.urls),  # admin site
 ]
 
-admin.site.index_title = "ECO Discord"
+admin.site.index_title = f"{settings.PROJECT_NAME} Discord"
 admin.site.site_url = None
 
 

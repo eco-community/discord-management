@@ -1,6 +1,6 @@
-# EcoDiscordManagement
+# DiscordManagement
 
-Website that allows to manage Discord members (detect fraud/ban/kick/manage roles)
+Website that allows to manage Discord members (ban/kick/manage roles)
 
 
 ## Installation

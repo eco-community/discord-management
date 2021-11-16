@@ -3,7 +3,7 @@ version: '3.8'
 
 volumes:
   postgres_data: {}
-  redisearch_data: {}
+  # redisearch_data: {}
 
 services:
   postgres:

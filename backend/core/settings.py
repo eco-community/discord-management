@@ -25,12 +25,17 @@ env = environ.Env(
 )
 # reading .env file
 environ.Env.read_env(env_file=str(BASE_DIR.parent.joinpath(".env")))
+PROJECT_NAME = env("PROJECT_NAME")
+PROJECT_WEBSITE = env("PROJECT_WEBSITE")
+PROJECT_WEBSITE_ABOUT = env("PROJECT_WEBSITE_ABOUT")
+PROJECT_WEBSITE_BLOG = env("PROJECT_WEBSITE_BLOG")
+ADMIN_LOGO_URL = env("ADMIN_LOGO_URL")
 
 
 sentry_sdk.init(
     dsn=env("SENTRY_API_KEY", default=""),
     integrations=[DjangoIntegration()],
-    environment="eco_discord_management",
+    environment=f"{PROJECT_NAME}_discord_management",
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
     # We recommend adjusting this value in production,
@@ -93,6 +98,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "discord.context_processors.admin_media",
             ],
         },
     },
@@ -163,7 +169,7 @@ MEDIA_ROOT = env.str("MEDIA_ROOT", default="")
 
 
 # Grapelli Admin Theme
-GRAPPELLI_ADMIN_TITLE = "ECO Discord Management"
+GRAPPELLI_ADMIN_TITLE = f"{PROJECT_NAME} Discord Management"
 GRAPPELLI_INDEX_DASHBOARD = "dashboard.CustomIndexDashboard"
 
 

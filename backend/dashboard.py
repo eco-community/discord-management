@@ -1,4 +1,5 @@
 from django.utils.translation import gettext_lazy as _
+from django.conf import settings
 
 from grappelli.dashboard import modules, Dashboard
 
@@ -40,19 +41,19 @@ class CustomIndexDashboard(Dashboard):
                 children=[
                     {
                         "title": _("Website"),
-                        "url": "https://www.eco.com/",
+                        "url": settings.PROJECT_WEBSITE,
                         "external": True,
                         "target": "_blank",
                     },
                     {
                         "title": _("About"),
-                        "url": "https://www.eco.com/about",
+                        "url": settings.PROJECT_WEBSITE_ABOUT,
                         "external": True,
                         "target": "_blank",
                     },
                     {
                         "title": _("Blog"),
-                        "url": "https://www.eco.com/blog",
+                        "url": settings.PROJECT_WEBSITE_BLOG,
                         "external": True,
                         "target": "_blank",
                     },

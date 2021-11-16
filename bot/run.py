@@ -16,7 +16,7 @@ if __name__ == "__main__":
     intents = Intents.default()
     intents.members = True
     intents.messages = True
-    activity = Activity(type=ActivityType.watching, name="ECO discord")
+    activity = Activity(type=ActivityType.watching, name=f"{config.PROJECT_NAME} discord".upper())
     bot = commands.Bot(command_prefix="!butler.", help_command=None, intents=intents, activity=activity)
 
     # init sentry SDK
@@ -28,7 +28,7 @@ if __name__ == "__main__":
     )
 
     # setup logger
-    file_handler = logging.FileHandler(filename="eco-discord-management.log")
+    file_handler = logging.FileHandler(filename="discord-management.log")
     stdout_handler = logging.StreamHandler(sys.stdout)
 
     logging.basicConfig(

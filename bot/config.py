@@ -18,3 +18,4 @@ KEEP_MESSAGES_FOR_ANTISPAM_IN_SECONDS = int(os.getenv("KEEP_MESSAGES_FOR_ANTISPA
 SPAM_RETRIES_UNTIL_MUTE = int(os.getenv("SPAM_RETRIES_UNTIL_MUTE", 2))
 _accountant_bot_ids_str = os.getenv("ACCOUNTANT_BOT_IDS", "814589660692349019,880589163110477854")
 ACCOUNTANT_BOT_IDS = list(map(int, _accountant_bot_ids_str.split(",")))
+PROJECT_NAME = os.getenv("PROJECT_NAME", "")
