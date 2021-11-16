@@ -42,13 +42,16 @@ class AntiFraudCog(commands.Cog):
             self.guild = self.bot.guilds[GUILD_INDEX]
 
     async def ban_copycats(self) -> None:
-        # ban users impersonating "The Accountant"
+        # ban users impersonating other users, configurable via WHITELISTED_IDS and BAN_USERNAMES_SIMILAR_TO
         member_ids_to_ban = set()
         # search for impersonators
         for member in self.bot.discord_members:
-            is_member_suspected = "accountant" in member.name.lower() or "accountant" in str(member.nick).lower()
-            is_member_real_accountant = int(member.id) in config.ACCOUNTANT_BOT_IDS
-            if is_member_suspected and not is_member_real_accountant:
+            is_member_suspected = (
+                config.BAN_USERNAMES_SIMILAR_TO in member.name.lower()
+                or config.BAN_USERNAMES_SIMILAR_TO in str(member.nick).lower()
+            )
+            is_member_whitelisted = int(member.id) in config.WHITELISTED_IDS
+            if is_member_suspected and not is_member_whitelisted:
                 member_ids_to_ban.add(member.id)
         # ban impersonators
         member_ids_to_ban_list = list(member_ids_to_ban)

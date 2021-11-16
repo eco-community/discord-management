@@ -3,6 +3,15 @@
 Website that allows to manage Discord members (ban/kick/manage roles)
 
 
+### Using website you can:
+* Lot's of options to filter members
+* Ban members
+* Kick members
+* Assign roles to members
+* Remove roles from members
+* Automatically ban copycats
+* Ability to ban/kick/assign roles/remove roles to multiple (or even all) members at the same time
+
 ## Installation
 1. [Install Docker](https://docs.docker.com/engine/install/ubuntu/)
 2. Copy and update settings in `.env.example`
