@@ -17,3 +17,7 @@ _whitelisted_ids_str = os.getenv("WHITELISTED_IDS", "814589660692349019,88058916
 WHITELISTED_IDS = list(map(int, _whitelisted_ids_str.split(",")))
 BAN_USERNAMES_SIMILAR_TO = os.getenv("BAN_USERNAMES_SIMILAR_TO", "")
 PROJECT_NAME = os.getenv("PROJECT_NAME", "")
+ADMIN_ROLE = os.getenv("ADMIN_ROLE", "")
+REDIS_HOST_URL = os.getenv("REDIS_HOST_URL", "redis://localhost:6379/0")
+KEEP_MESSAGES_FOR_ANTISPAM_IN_SECONDS = int(os.getenv("KEEP_MESSAGES_FOR_ANTISPAM_IN_SECONDS", 600))
+SPAM_RETRIES_UNTIL_MUTE = int(os.getenv("SPAM_RETRIES_UNTIL_MUTE", 2))
