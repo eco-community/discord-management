@@ -2,6 +2,7 @@
 
 Website that allows to manage Discord members (ban/kick/manage roles)
 
+**For more on this bot and all the rest of the Eco Community bots, check out [this post](https://echo.mirror.xyz/GlFuqSbTZOLDl0LA7eDa0Yibhqq6IHNUC48nd3WJZQw).**
 
 ### Using website you can:
 * Lot's of options to filter members
