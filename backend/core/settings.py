@@ -35,7 +35,7 @@ ADMIN_LOGO_URL = env("ADMIN_LOGO_URL")
 sentry_sdk.init(
     dsn=env("SENTRY_API_KEY", default=""),
     integrations=[DjangoIntegration()],
-    environment=f"{PROJECT_NAME}_discord_management",
+    environment=f"{PROJECT_NAME}_discord_management".casefold(),
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for performance monitoring.
     # We recommend adjusting this value in production,
