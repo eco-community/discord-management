@@ -53,8 +53,11 @@ class DiscordMember(models.Model):
     name = models.CharField(max_length=255)
     username = models.CharField(max_length=255)  # a little bit of db denormalization
     discriminator = models.CharField(max_length=255)
-    engagement_score = models.IntegerField(default=0, choices=EngagementScoreChoices.choices)  # db denormalization
+    engagement_score = models.IntegerField(
+        default=0, choices=EngagementScoreChoices.choices
+    )  # db denormalization
     messages_count = models.IntegerField(default=0)
+    balance = models.DecimalField(max_digits=15, decimal_places=4, default=0)
     age_of_account = models.CharField(max_length=255)  # a little bit of db denormalization
     nick = models.CharField(max_length=255, blank=True, null=True)
     roles = models.ManyToManyField(DiscordRole, related_name="members", blank=True)
@@ -88,7 +91,9 @@ class Task(models.Model):
     task_type = models.CharField(choices=TaskTypesChoices.choices, max_length=255)
     members_ids = models.JSONField()  # list of members ids
     roles_ids = models.JSONField(default=list, blank=True)  # list of roles ids
-    status = models.CharField(default=TaskStatusChoices.IN_QUEUE, choices=TaskStatusChoices.choices, max_length=255)
+    status = models.CharField(
+        default=TaskStatusChoices.IN_QUEUE, choices=TaskStatusChoices.choices, max_length=255
+    )
     error = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

@@ -1,6 +1,7 @@
 from tortoise import fields
 from tortoise.models import Model
 
+from app.validators import PositiveValueValidator
 from app.constants import EngagementScoreChoices, TaskTypesChoices, TaskStatusChoices
 
 
@@ -48,11 +49,18 @@ class DiscordMember(Model):
     name = fields.CharField(max_length=255)
     username = fields.CharField(max_length=255)  # a little bit of db denormalization
     discriminator = fields.CharField(max_length=255)
-    engagement_score = fields.IntEnumField(default=0, enum_type=EngagementScoreChoices)  # db denormalization
+    engagement_score = fields.IntEnumField(
+        default=0, enum_type=EngagementScoreChoices
+    )  # db denormalization
     messages_count = fields.IntField(default=0)
+    balance = fields.data.DecimalField(
+        max_digits=15, decimal_places=4, default=0, validators=[PositiveValueValidator()]
+    )
     age_of_account = fields.CharField(max_length=255)  # a little bit of db denormalization
     nick = fields.CharField(max_length=255, null=True)
-    roles = fields.ManyToManyField("app.DiscordRole", related_name="members", through="discord_discordmember_roles")
+    roles = fields.ManyToManyField(
+        "app.DiscordRole", related_name="members", through="discord_discordmember_roles"
+    )
     pending = fields.BooleanField(default=False)
     premium_since = fields.DatetimeField(null=True)
     joined_at = fields.DatetimeField(null=True)

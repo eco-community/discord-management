@@ -64,8 +64,23 @@ class DiscordMemberAdmin(admin.ModelAdmin):
         "age_of_account",
     ]
     ordering = ["joined_at"]
-    sortable_by = ["username", "bot", "engagement_score", "messages_count", "joined_at", "created_at"]
-    list_filter = ["roles", "engagement_score", "joined_at", "created_at", "pending", "bot"]
+    sortable_by = [
+        "username",
+        "bot",
+        "engagement_score",
+        "messages_count",
+        "joined_at",
+        "created_at",
+    ]
+    list_filter = [
+        "roles",
+        "engagement_score",
+        "balance",
+        "joined_at",
+        "created_at",
+        "pending",
+        "bot",
+    ]
     search_fields = ["name", "discriminator", "nick", "username"]
 
     def role(self, obj):
@@ -73,7 +88,9 @@ class DiscordMemberAdmin(admin.ModelAdmin):
 
     @admin.display()
     def avatar(self, obj):
-        return format_html(f'<img src="{obj.avatar_url}" width="150" height="150" style="object-fit:contain" />')
+        return format_html(
+            f'<img src="{obj.avatar_url}" width="150" height="150" style="object-fit:contain" />'
+        )
 
     def has_add_permission(self, request, obj=None):
         return False
@@ -84,7 +101,13 @@ class DiscordMemberAdmin(admin.ModelAdmin):
     def has_change_permission(self, request, obj=None):
         return False
 
-    actions = ["kick_action", "ban_action", "assign_role_action", "remove_role_action", "export_as_csv"]
+    actions = [
+        "kick_action",
+        "ban_action",
+        "assign_role_action",
+        "remove_role_action",
+        "export_as_csv",
+    ]
 
     @admin.action(description="Export selected rows to CSV")
     def export_as_csv(self, request, queryset):
