@@ -5,6 +5,7 @@ from typing import List, Dict
 from datetime import datetime
 
 import discord
+import aiohttp
 from sentry_sdk import capture_exception, Hub
 from tortoise.transactions import in_transaction
 from discord.ext import commands, tasks
@@ -25,6 +26,7 @@ class SyncDiscord(commands.Cog):
         self.bot.discord_members = []
         self.bot.members_messages_count = defaultdict(lambda: 0, {})  # id, messages_count
         self.roles: List[discord.Role]
+        self.balances_dict: Dict[int, float] = {}
         self.sync_users_and_roles_to_db.start()
 
     def cog_unload(self):
@@ -37,8 +39,8 @@ class SyncDiscord(commands.Cog):
             if not self.sync_users_and_roles_lock.locked():
                 await self.sync_users_and_roles_lock.acquire()
                 try:
-                    await self.fetch_users_and_roles()
-                    await self.save_users_and_roles_to_db()
+                    await self.fetch_users_and_roles_data()
+                    await self.save_users_and_roles_data_to_db()
                 except Exception as e:
                     logging.debug(f":::discord_management: {e}")
                     capture_exception(e)
@@ -66,16 +68,38 @@ class SyncDiscord(commands.Cog):
         self.bot.members_messages_count = _members_messages_count
         return None
 
-    async def fetch_users_and_roles(self) -> None:
+    async def fetch_users_and_roles_data(self) -> None:
         # fetch all roles
         self.roles = await self.guild.fetch_roles()
         # fetch all members
         self.bot.discord_members = []
         async for member in self.guild.fetch_members(limit=None):
             self.bot.discord_members.append(member)
+        # fetch points balances
+        await self.fetch_users_balances()
         return None
 
-    async def save_users_and_roles_to_db(self) -> None:
+    async def fetch_users_balances(self) -> None:
+        limit = 500
+        pages = int(len(self.bot.discord_members) / limit) + 1
+        self.balances_dict = {}
+        async with aiohttp.ClientSession() as session:
+            for page in range(pages):
+                js_data = {"limit": limit, "offset": page * limit}
+                # we will fetch API synchronously to not spam API
+                try:
+                    async with session.post(
+                        "https://community.eco.com/balances", json=js_data
+                    ) as resp:
+                        json_list = await resp.json()
+                        for json_item in json_list:
+                            self.balances_dict[int(json_item["id"])] = json_item["points"]
+                except (aiohttp.ClientConnectorError, KeyError, aiohttp.ClientResponseError) as e:
+                    logging.debug(f":::discord_management: {e}")
+                    capture_exception(e)
+        return None
+
+    async def save_users_and_roles_data_to_db(self) -> None:
         async with in_transaction():
             # clean up db
             await DiscordRoleMember.all().delete()
@@ -104,7 +128,10 @@ class SyncDiscord(commands.Cog):
                         name=_.name,
                         username=f"{_.name}#{_.discriminator}",
                         discriminator=_.discriminator,
-                        engagement_score=calculate_engagement_score(self.bot.members_messages_count[_.id]),
+                        engagement_score=calculate_engagement_score(
+                            self.bot.members_messages_count[_.id]
+                        ),
+                        balance=self.balances_dict.get(_.id, 0),
                         messages_count=self.bot.members_messages_count[_.id],
                         age_of_account=humanize_readable_datetime(datetime.now(), _.created_at),
                         nick=_.nick,

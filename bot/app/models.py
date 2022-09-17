@@ -54,7 +54,7 @@ class DiscordMember(Model):
     )  # db denormalization
     messages_count = fields.IntField(default=0)
     balance = fields.data.DecimalField(
-        max_digits=15, decimal_places=4, default=0, validators=[PositiveValueValidator()]
+        max_digits=15, decimal_places=2, default=0, validators=[PositiveValueValidator()]
     )
     age_of_account = fields.CharField(max_length=255)  # a little bit of db denormalization
     nick = fields.CharField(max_length=255, null=True)

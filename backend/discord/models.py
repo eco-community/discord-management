@@ -57,7 +57,7 @@ class DiscordMember(models.Model):
         default=0, choices=EngagementScoreChoices.choices
     )  # db denormalization
     messages_count = models.IntegerField(default=0)
-    balance = models.DecimalField(max_digits=15, decimal_places=4, default=0)
+    balance = models.DecimalField(max_digits=15, decimal_places=2, default=0)
     age_of_account = models.CharField(max_length=255)  # a little bit of db denormalization
     nick = models.CharField(max_length=255, blank=True, null=True)
     roles = models.ManyToManyField(DiscordRole, related_name="members", blank=True)

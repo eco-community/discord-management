@@ -46,6 +46,7 @@ class DiscordMemberAdmin(admin.ModelAdmin):
         "bot",
         "pending",
         "engagement_score",
+        "balance",
         "messages_count",
         "premium_since",
         "joined_at",
@@ -57,6 +58,7 @@ class DiscordMemberAdmin(admin.ModelAdmin):
     list_display = [
         "username",
         "role",
+        "balance",
         "engagement_score",
         "messages_count",
         "joined_at",
@@ -67,6 +69,7 @@ class DiscordMemberAdmin(admin.ModelAdmin):
     sortable_by = [
         "username",
         "bot",
+        "balance",
         "engagement_score",
         "messages_count",
         "joined_at",
@@ -75,13 +78,12 @@ class DiscordMemberAdmin(admin.ModelAdmin):
     list_filter = [
         "roles",
         "engagement_score",
-        "balance",
         "joined_at",
         "created_at",
         "pending",
         "bot",
     ]
-    search_fields = ["name", "discriminator", "nick", "username"]
+    search_fields = ["id", "name", "discriminator", "nick", "username"]
 
     def role(self, obj):
         return ", ".join([_.name for _ in obj.roles.all()])
